@@ -1,20 +1,17 @@
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import highlight from 'highlight.js';
-import showdown from 'showdown';
-import xssFilter from 'showdown-xss-filter';
 import { get, debounce, invoke, noop } from 'lodash';
 import analytics from './analytics';
 import { viewExternalUrl } from './utils/url-utils';
 import NoteContentEditor from './note-content-editor';
 
+import { renderNoteToHtml } from './utils/render-note-to-html';
+
 const saveDelay = 2000;
 
-const markdownConverter = new showdown.Converter({ extensions: [xssFilter] });
-markdownConverter.setFlavor('github');
-
 const renderToNode = (node, content) => {
-  node.innerHTML = markdownConverter.makeHtml(content);
+  node.innerHTML = renderNoteToHtml(content);
   node.querySelectorAll('pre code').forEach(highlight.highlightBlock);
 };
 

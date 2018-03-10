@@ -1,16 +1,13 @@
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
-import showdown from 'showdown';
-import xssFilter from 'showdown-xss-filter';
 import NoteDetail from './note-detail';
 import TagField from './tag-field';
 import NoteToolbar from './note-toolbar';
 import RevisionSelector from './revision-selector';
 import { get, property } from 'lodash';
 
-const markdownConverter = new showdown.Converter({ extensions: [xssFilter] });
-markdownConverter.setFlavor('github');
+import { renderNoteToHtml } from './utils/render-note-to-html';
 
 export const NoteEditor = React.createClass({
   propTypes: {
@@ -176,7 +173,6 @@ export const NoteEditor = React.createClass({
   },
 
   render: function() {
-    let noteContent = '';
     const { editorMode, note, revisions, fontSize, shouldPrint } = this.props;
     const revision = this.state.revision || note;
     const isViewingRevisions = this.state.isViewingRevisions;
@@ -199,12 +195,7 @@ export const NoteEditor = React.createClass({
       }
     );
 
-    if (shouldPrint) {
-      const content = get(revision, 'data.content', '');
-      noteContent = markdownEnabled
-        ? markdownConverter.makeHtml(content)
-        : content;
-    }
+    const content = get(revision, 'data.content', '');
 
     const printStyle = {
       fontSize: fontSize + 'px',
@@ -251,7 +242,9 @@ export const NoteEditor = React.createClass({
           <div
             style={printStyle}
             className="note-print note-detail-markdown"
-            dangerouslySetInnerHTML={{ __html: noteContent }}
+            dangerouslySetInnerHTML={{
+              __html: markdownEnabled ? renderNoteToHtml(content) : content,
+            }}
           />
         )}
         {!isTrashed && (
